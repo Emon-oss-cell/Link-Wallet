@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Links</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding-bottom: 50px;
+            background-color: #001f3d; /* Dark Blue Background */
+            color: #f0f0f0;
+        }
+        h1 {
+            text-align: center;
+            color: #ffffff;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff; /* White Background for Category Box */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+        .search-bar {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .search-bar input {
+            width: 80%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #00aaff;
+            border-radius: 5px;
+            background: #ffffff;
+            color: black;
+        }
+        .category {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 2px solid #00aaff;
+            border-radius: 8px;
+            background-color: #ffffff; /* White Background for Category Box */
+            text-align: center; /* Category name centered */
+        }
+        .category h2 {
+            color: #333333; /* Dark text for category name */
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        .category button {
+            margin-left: 10px;
+            padding: 5px 10px;
+            background-color: #dc3545; /* Red button for delete */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .category button:hover {
+            background-color: #c82333;
+        }
+        .link-item {
+            margin: 10px 0;
+            text-align: left; /* Align links to the left */
+        }
+        .link-item a {
+            font-weight: bold;
+            color: #28a745; /* Green link text */
+            text-decoration: none;
+            margin-left: 5px;
+        }
+        .link-item p {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #555555; /* Darker text for description */
+        }
+        .link-item button {
+            padding: 5px 10px;
+            background-color: #dc3545; /* Red button for delete */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .link-item button:hover {
+            background-color: #c82333;
+        }
+        .add-link {
+            margin-top: 20px;
+            padding: 15px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        .add-link input {
+            width: 80%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #00aaff;
+            border-radius: 5px;
+            background: #ffffff;
+            color: black;
+        }
+        .add-link button {
+            padding: 10px 20px;
+            background: #28a745; /* Green Button */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .add-link button:hover {
+            background: #218838; /* Darker green on hover */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Useful Links</h1>
+
+        <!-- Search Bar -->
+        <div class="search-bar">
+            <input type="text" id="search" placeholder="Search for category or link" onkeyup="searchLinks()">
+        </div>
+        
+        <div id="categories"></div>
+        
+        <div class="add-link">
+            <h3>Add New Link</h3>
+            <input type="text" id="category" placeholder="Category Name">
+            <input type="text" id="title" placeholder="Link Title">
+            <input type="text" id="url" placeholder="URL">
+            <input type="text" id="desc" placeholder="Description">
+            <button onclick="addLink()">Add</button>
+        </div>
+    </div>
+    
+    <script>
+        function loadLinks() {
+            let savedLinks = localStorage.getItem("savedLinks");
+            if (savedLinks) {
+                document.getElementById("categories").innerHTML = savedLinks;
+            }
+        }
+
+        function saveLinks() {
+            localStorage.setItem("savedLinks", document.getElementById("categories").innerHTML);
+        }
+
+        function addLink() {
+            let category = document.getElementById("category").value;
+            let title = document.getElementById("title").value;
+            let url = document.getElementById("url").value;
+            let desc = document.getElementById("desc").value;
+            
+            let categoriesDiv = document.getElementById("categories");
+            let existingCategory = [...categoriesDiv.children].find(cat => cat.querySelector("h2")?.innerText === category);
+            
+            if (!existingCategory) {
+                let newCategory = document.createElement("div");
+                newCategory.className = "category";
+                newCategory.innerHTML = `<h2>${category}</h2><button onclick="deleteCategory(this)">Delete Category</button>`;
+                categoriesDiv.appendChild(newCategory);
+                existingCategory = newCategory;
+            }
+            
+            let linkItem = document.createElement("div");
+            linkItem.className = "link-item";
+            let serialNo = existingCategory.querySelectorAll(".link-item").length + 1; // Serial number
+            linkItem.innerHTML = `${serialNo}. <a href="${url}" target="_blank">${title}</a><p>${desc}</p><button onclick="deleteLink(this)">Delete Link</button>`;
+            existingCategory.appendChild(linkItem);
+            
+            saveLinks();
+        }
+
+        function deleteCategory(button) {
+            button.parentElement.remove();
+            saveLinks();
+        }
+
+        function deleteLink(button) {
+            button.parentElement.remove();
+            saveLinks();
+        }
+
+        function searchLinks() {
+            let searchQuery = document.getElementById("search").value.toLowerCase();
+            let categoriesDiv = document.getElementById("categories");
+            let categories = categoriesDiv.getElementsByClassName("category");
+            
+            Array.from(categories).forEach(category => {
+                let categoryName = category.querySelector("h2").innerText.toLowerCase();
+                let links = category.getElementsByClassName("link-item");
+                let hasMatch = categoryName.includes(searchQuery);
+                
+                Array.from(links).forEach(link => {
+                    let linkText = link.querySelector("a").innerText.toLowerCase();
+                    if (linkText.includes(searchQuery)) {
+                        hasMatch = true;
+                    }
+                });
+                
+                if (hasMatch) {
+                    category.style.display = "";
+                } else {
+                    category.style.display = "none";
+                }
+            });
+        }
+
+        window.onload = loadLinks;
+    </script>
+</body>
+</html>
